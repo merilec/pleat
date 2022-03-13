@@ -1,0 +1,9 @@
+/target
+Cargo.lock
+.DS_Store
+build
+.vscode
+
+*.gba
+*.sa*
+*.ss[0-9]
