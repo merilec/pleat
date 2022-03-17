@@ -1,6 +1,6 @@
 use crate::constants::*;
+use crate::error::*;
 use crate::graphics::*;
-use crate::lz77::*;
 use crate::mapping::*;
 use crate::rom::*;
 
@@ -16,7 +16,7 @@ pub struct MapLayout {
 }
 
 impl MapLayout {
-    pub fn read(address: usize, rom: &mut Rom) -> Result<MapLayout, RomError> {
+    pub fn read(address: usize, rom: &mut Rom) -> Result<MapLayout> {
         rom.seek_to(address)?;
         Ok(MapLayout {
             width: rom.read_u32()?,
@@ -29,10 +29,7 @@ impl MapLayout {
             border_height: rom.read_u8()?,
         })
     }
-    pub fn get_map_blocks(
-        &self,
-        rom: &mut Rom,
-    ) -> Result<Vec<MapBlock>, RomError> {
+    pub fn get_map_blocks(&self, rom: &mut Rom) -> Result<Vec<MapBlock>> {
         let mut mapblocks: Vec<MapBlock> = vec![];
         for y in 0..self.height {
             for x in 0..self.width {
@@ -47,7 +44,7 @@ impl MapLayout {
         rom: &mut Rom,
         x: usize,
         y: usize,
-    ) -> Result<MapBlock, RomError> {
+    ) -> Result<MapBlock> {
         let map_block_addr =
             self.map_blocks_addr + (y * 2 * self.width as usize) + (x * 2);
         MapBlock::read(map_block_addr, rom)
@@ -58,30 +55,21 @@ impl MapLayout {
         x: usize,
         y: usize,
         map_block: &MapBlock,
-    ) -> Result<(), RomError> {
+    ) -> Result<()> {
         let map_block_addr =
             self.map_blocks_addr + (y * 2 * self.width as usize) + (x * 2);
         map_block.write(map_block_addr, rom)
     }
-    pub fn get_pri_tileset(
-        &self,
-        rom: &mut Rom,
-    ) -> Result<MapTileset, RomError> {
+    pub fn get_pri_tileset(&self, rom: &mut Rom) -> Result<MapTileset> {
         MapTileset::read(self.pri_tileset_addr, rom, MAX_NUM_PRIMARY_BLOCKS)
     }
-    pub fn get_sec_tileset(
-        &self,
-        rom: &mut Rom,
-    ) -> Result<MapTileset, RomError> {
+    pub fn get_sec_tileset(&self, rom: &mut Rom) -> Result<MapTileset> {
         MapTileset::read(self.sec_tileset_addr, rom, MAX_NUM_SECONDARY_BLOCKS)
     }
     pub fn get_palettes(
         &self,
         rom: &mut Rom,
-    ) -> Result<
-        [[Color; NUM_COLORS_IN_PALETTE]; NUM_PALETTES_IN_TILESET],
-        RomError,
-    > {
+    ) -> Result<[[Color; NUM_COLORS_IN_PALETTE]; NUM_PALETTES_IN_TILESET]> {
         let pri_palettes = self.get_pri_tileset(rom)?.get_palettes(rom)?; // 0 - 6
         let sec_palettes = self.get_sec_tileset(rom)?.get_palettes(rom)?; // 7 - F
         Ok([&pri_palettes[0..=6], &sec_palettes[7..=0xF]]
@@ -89,10 +77,7 @@ impl MapLayout {
             .try_into()
             .unwrap())
     }
-    pub fn get_tiles_data(
-        &self,
-        rom: &mut Rom,
-    ) -> Result<Vec<Vec<u8>>, LzError> {
+    pub fn get_tiles_data(&self, rom: &mut Rom) -> Result<Vec<Vec<u8>>> {
         let pri_tiles_data = self.get_pri_tileset(rom)?.get_tiles_data(rom);
         let sec_tiles_data = self.get_sec_tileset(rom)?.get_tiles_data(rom);
         Ok([&pri_tiles_data?[..], &sec_tiles_data?[..]]
@@ -100,15 +85,12 @@ impl MapLayout {
             .try_into()
             .unwrap())
     }
-    pub fn get_blocks(&self, rom: &mut Rom) -> Result<Vec<Block>, RomError> {
+    pub fn get_blocks(&self, rom: &mut Rom) -> Result<Vec<Block>> {
         let pri_blocks = self.get_pri_tileset(rom)?.get_blocks(rom);
         let sec_blocks = self.get_sec_tileset(rom)?.get_blocks(rom);
         Ok([pri_blocks, sec_blocks].concat())
     }
-    pub fn get_blocksheet_as_png(
-        &self,
-        rom: &mut Rom,
-    ) -> Result<String, LzError> {
+    pub fn get_blocksheet_as_png(&self, rom: &mut Rom) -> Result<String> {
         let palette = self
             .get_palettes(rom)?
             .iter()

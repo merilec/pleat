@@ -1,5 +1,6 @@
 use std::fmt;
 
+use crate::error::*;
 use crate::mapping::*;
 use crate::rom::*;
 
@@ -23,7 +24,7 @@ impl MapHeader {
         rom: &mut Rom,
         bank_num: usize,
         map_num: usize,
-    ) -> Result<MapHeader, RomError> {
+    ) -> Result<MapHeader> {
         rom.seek_to(address)?;
         Ok(MapHeader {
             layout_addr: rom.read_address()?,
@@ -32,7 +33,7 @@ impl MapHeader {
             map_num,
         })
     }
-    pub fn get_map_layout(&self, rom: &mut Rom) -> Result<MapLayout, RomError> {
+    pub fn get_map_layout(&self, rom: &mut Rom) -> Result<MapLayout> {
         MapLayout::read(self.layout_addr, rom)
     }
     pub fn get_map_name(&self, _rom: &mut Rom) -> String {

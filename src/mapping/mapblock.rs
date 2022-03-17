@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use crate::error::*;
 use crate::rom::*;
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
@@ -9,7 +10,7 @@ pub struct MapBlock {
 }
 
 impl MapBlock {
-    pub fn read(address: usize, rom: &mut Rom) -> Result<Self, RomError> {
+    pub fn read(address: usize, rom: &mut Rom) -> Result<Self> {
         rom.seek_to(address)?;
         let value = rom.read_u16()?;
         Ok(Self {
@@ -17,7 +18,7 @@ impl MapBlock {
             permission: (value >> 0xA) as u8,
         })
     }
-    pub fn write(&self, address: usize, rom: &mut Rom) -> Result<(), RomError> {
+    pub fn write(&self, address: usize, rom: &mut Rom) -> Result<()> {
         rom.seek_to(address)?;
         let value = self.block_id | (self.permission as u16) << 0xA;
         rom.write_u16(value)

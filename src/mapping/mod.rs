@@ -12,6 +12,7 @@ pub use self::mapblock::MapBlock;
 
 mod block;
 pub use self::block::Block;
+pub use self::block::InvalidBlock;
 
 mod tile;
 pub use self::tile::Tile;

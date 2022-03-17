@@ -1,4 +1,5 @@
 use crate::constants::*;
+use crate::error::*;
 use crate::graphics::*;
 use crate::lz77::*;
 use crate::mapping::*;
@@ -21,7 +22,7 @@ impl MapTileset {
         address: usize,
         rom: &mut Rom,
         max_block_count: usize,
-    ) -> Result<MapTileset, RomError> {
+    ) -> Result<MapTileset> {
         rom.seek_to(address)?;
         Ok(MapTileset {
             is_compressed: rom.read_u8()? != 0,
@@ -35,10 +36,7 @@ impl MapTileset {
             max_block_count,
         })
     }
-    pub fn get_tiles_data(
-        &self,
-        rom: &mut Rom,
-    ) -> Result<Vec<Vec<u8>>, LzError> {
+    pub fn get_tiles_data(&self, rom: &mut Rom) -> Result<Vec<Vec<u8>>> {
         let data = match self.is_compressed {
             true => lz77_decompress(self.tilemap_addr, rom)?,
             false => {
@@ -52,10 +50,7 @@ impl MapTileset {
     pub fn get_palettes(
         &self,
         rom: &mut Rom,
-    ) -> Result<
-        [[Color; NUM_COLORS_IN_PALETTE]; NUM_PALETTES_IN_TILESET],
-        RomError,
-    > {
+    ) -> Result<[[Color; NUM_COLORS_IN_PALETTE]; NUM_PALETTES_IN_TILESET]> {
         rom.seek_to(self.palettes_addr)?;
         let mut palettes: Vec<[Color; NUM_COLORS_IN_PALETTE]> = vec![];
         for _ in 0..NUM_PALETTES_IN_TILESET {
@@ -96,7 +91,7 @@ impl MapTileset {
         &self,
         rom: &mut Rom,
         palette_id: usize,
-    ) -> Result<String, LzError> {
+    ) -> Result<String> {
         const NUM_TILES_ACROSS: usize = 16;
         let tiles_data = self.get_tiles_data(rom)?;
         let num_tiles = tiles_data.len();

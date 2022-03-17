@@ -1,5 +1,6 @@
 use std::fmt;
 
+use crate::error::*;
 use crate::mapping::*;
 use crate::rom::*;
 
@@ -32,7 +33,6 @@ pub enum InvalidBlock {
     InvalidTerrain(u32),
     InvalidBackground(u32),
     InvalidEncounter(u32),
-    RomError(RomError),
 }
 impl std::error::Error for InvalidBlock {}
 impl fmt::Display for InvalidBlock {
@@ -59,13 +59,7 @@ impl fmt::Display for InvalidBlock {
                     value
                 )
             }
-            InvalidBlock::RomError(err) => err.fmt(f),
         }
-    }
-}
-impl From<RomError> for InvalidBlock {
-    fn from(err: RomError) -> InvalidBlock {
-        InvalidBlock::RomError(err)
     }
 }
 
@@ -91,7 +85,7 @@ impl Block {
         block_address: usize,
         block_attr_address: usize,
         rom: &mut Rom,
-    ) -> Result<Block, InvalidBlock> {
+    ) -> Result<Block> {
         rom.seek_to(block_address)?;
         let mut read_tile =
             |tile_num: usize| Tile::read(block_address + tile_num * 2, rom);
@@ -115,14 +109,14 @@ impl Block {
             1 => Terrain::Grass,
             2 => Terrain::Water,
             3 => Terrain::Waterfall,
-            _ => return Err(InvalidBlock::InvalidTerrain(tr)),
+            _ => Err(InvalidBlock::InvalidTerrain(tr))?,
         };
         let en = (value & 0x7000000) >> 24;
         let encounter = match en {
             0 => Encounter::None,
             1 => Encounter::Grass,
             2 => Encounter::Surf,
-            _ => return Err(InvalidBlock::InvalidEncounter(en)),
+            _ => return Err(InvalidBlock::InvalidEncounter(en))?,
         };
         let bg = (value & 0x70000000) >> 28;
         let background = match bg {
@@ -130,7 +124,7 @@ impl Block {
             2 => Background::Covered,
             3 => Background::Triple,
             4 => Background::Split,
-            _ => return Err(InvalidBlock::InvalidBackground(bg)),
+            _ => return Err(InvalidBlock::InvalidBackground(bg))?,
         };
 
         Ok(Block {

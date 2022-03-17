@@ -1,4 +1,17 @@
+use std::error::Error as StdError;
+use std::fmt;
+
+use crate::error::*;
 use crate::rom::*;
+
+#[derive(Debug)]
+pub struct InvalidTile(usize);
+impl StdError for InvalidTile {}
+impl fmt::Display for InvalidTile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Invalid tile at {:#x}!", self.0)
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 pub struct Tile {
@@ -9,7 +22,7 @@ pub struct Tile {
 }
 
 impl Tile {
-    pub fn read(address: usize, rom: &mut Rom) -> Result<Tile, RomError> {
+    pub fn read(address: usize, rom: &mut Rom) -> Result<Tile> {
         rom.seek_to(address)?;
         let value = rom.read_u16()?;
         Ok(Tile {
