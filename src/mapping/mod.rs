@@ -1,14 +1,14 @@
-mod mapheader;
-pub use self::mapheader::MapHeader;
+mod map_header;
+pub use self::map_header::MapHeader;
 
-mod maplayout;
-pub use self::maplayout::MapLayout;
+mod map_layout;
+pub use self::map_layout::MapLayout;
 
-mod maptileset;
-pub use self::maptileset::MapTileset;
+mod map_tileset;
+pub use self::map_tileset::MapTileset;
 
-mod mapblock;
-pub use self::mapblock::MapBlock;
+mod map_block;
+pub use self::map_block::MapBlock;
 
 mod block;
 pub use self::block::Block;
