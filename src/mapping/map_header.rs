@@ -1,5 +1,6 @@
 use std::fmt;
 
+use crate::encounter::EncounterTables;
 use crate::error::*;
 use crate::mapping::*;
 use crate::rom::*;
@@ -38,5 +39,11 @@ impl MapHeader {
     }
     pub fn get_map_name(&self, _rom: &mut Rom) -> String {
         unimplemented!();
+    }
+    pub fn get_encounter_tables(
+        &self,
+        rom: &mut Rom,
+    ) -> Result<Option<EncounterTables>> {
+        EncounterTables::get(rom, self.bank_num, self.map_num)
     }
 }

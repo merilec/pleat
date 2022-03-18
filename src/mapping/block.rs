@@ -1,5 +1,6 @@
 use std::fmt;
 
+use crate::encounter::*;
 use crate::error::*;
 use crate::mapping::*;
 use crate::rom::*;
@@ -18,14 +19,6 @@ pub enum Terrain {
     Grass = 1,     // cuttable-grass
     Water = 2,     // allowed to use rod, surf
     Waterfall = 3, // unused in game code, but used by some blocks
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum Encounter {
-    // determine which wild pokemon encounter table to look up
-    None = 0,
-    Grass = 1,
-    Surf = 2,
 }
 
 #[derive(Debug)]
@@ -76,7 +69,7 @@ pub struct Block {
     // <unused>       0x1F
     pub behavior: u16,
     pub terrain: Terrain,
-    pub encounter: Encounter,
+    pub encounter: EncounterType,
     pub background: Background,
 }
 
@@ -113,9 +106,9 @@ impl Block {
         };
         let en = (value & 0x7000000) >> 24;
         let encounter = match en {
-            0 => Encounter::None,
-            1 => Encounter::Grass,
-            2 => Encounter::Surf,
+            0 => EncounterType::None,
+            1 => EncounterType::Grass,
+            2 => EncounterType::Surf,
             _ => return Err(InvalidBlock::InvalidEncounter(en))?,
         };
         let bg = (value & 0x70000000) >> 28;
