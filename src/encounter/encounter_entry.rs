@@ -22,7 +22,7 @@ impl EncounterEntry {
     pub fn write(&self, address: usize, rom: &mut Rom) -> Result<()> {
         rom.seek_to(address)?;
         rom.write_u8(self.min_level)?;
-        rom.write_u8(self.min_level)?;
+        rom.write_u8(self.max_level)?;
         rom.write_u16(self.species)
     }
 }

@@ -51,6 +51,25 @@ impl EncounterTables {
             fishing_address: rom.read_address()?,
         })
     }
+    pub fn get_encounter_table(
+        &self,
+        rom: &mut Rom,
+        encounter_type: EncounterType,
+    ) -> Result<Option<EncounterTable>> {
+        if matches!(encounter_type, EncounterType::None) {
+            return Ok(None);
+        }
+        let address = match encounter_type {
+            EncounterType::None => unreachable!(),
+            EncounterType::Grass => self.grass_address,
+            EncounterType::Surf => self.surf_address,
+            EncounterType::RockSmash => self.rock_smash_address,
+            EncounterType::OldRod => self.fishing_address,
+            EncounterType::GoodRod => self.fishing_address,
+            EncounterType::SuperRod => self.fishing_address,
+        };
+        EncounterTable::read(address, rom, encounter_type)
+    }
     pub fn get_grass_encounter_table(
         &self,
         rom: &mut Rom,
